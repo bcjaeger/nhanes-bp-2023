@@ -1,0 +1,426 @@
+---
+title: "TITLE TBD"
+bibliography: refs.bib
+csl: jama.csl
+always_allow_html: true
+output: 
+  officedown::rdocx_document:
+    reference_docx: style_manuscript_times_new_roman.docx
+    keep_md: false
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE, 
+                      message = FALSE,
+                      warning = FALSE,
+                      dpi = 600, 
+                      fig.width = 11, 
+                      fig.height = 6)
+
+margins_normal <- page_mar(bottom = 1,  #0.3937, 
+                           top    = 1,  #0.3937, 
+                           right  = 1,  #0.3937, 
+                           left   = 1, #0.3937,
+                           gutter = 0)
+
+portrait_above <- function(){
+  
+  block_section(
+    prop_section(
+      page_size = page_size(orient = "portrait"),
+      type = "continuous",
+      page_margins = margins_normal
+    )
+  )
+  
+}
+
+landscape_above <- function(){
+  block_section(
+    prop_section(
+      page_size = page_size(orient = "landscape"),
+      page_margins = margins_normal,
+      type = "continuous"
+    )
+  )
+}
+
+
+withr::with_dir(
+ new = here::here(),
+ code = {
+  targets::tar_load(
+   c(
+    nhanes_design,
+    tbl_characteristics,
+    tbl_bp_means,
+    tbl_htn_prev,
+    tbl_htn_aware_prev,
+    tbl_htn_aware_meds_prev,
+    tbl_bp_control_prev,
+    tbl_bp_control_meds_prev,
+    tbl_prevalence_ratios,
+    tbl_prevalence_ratios_by_cycle,
+    tbl_prevalance_ratio_diffs
+   )
+  )
+ }
+)
+
+width_max_landscape <- 10.5
+width_max_portrait <- 7.5
+ 
+
+```
+
+
+```{r manuscript-globals}
+
+htn_jnc7_defn <- "Hypertension was defined according to the Seventh Report of the Joint National Committee on Prevention, Detection, Evaluation, and Treatment of High Blood Pressure as a systolic blood pressure ≥ 140 mm Hg, and/or diastolic blood pressure ≥ 90 mm Hg and/or self-reported antihypertensive medication use."
+
+htn_accaha_defn <- "Hypertension was defined according to the 2017 American College of Cardiology / American Heart Association Blood Pressure Guideline as a systolic blood pressure ≥ 130 mm Hg, and/or diastolic blood pressure ≥ 80 mm Hg and/or self-reported antihypertensive medication use."
+
+bpc_jnc7_defn <- "Controlled blood pressure was defined as systolic blood pressure < 140 mm Hg and diastolic blood pressure < 90 mm Hg."
+
+bpc_accaha_defn <- "Controlled blood pressure was defined as systolic blood pressure < 130 mm Hg and diastolic blood pressure < 80 mm Hg."
+
+
+age_wts_rounded <- round(100*nhanes_design$wts_overall, 2)
+
+age_wts_defn_overall <- glue(
+ "Age adjustment was performed using direct standardization with the standard \\
+ being all adults across the entire period (2013-2023); the age categories \\
+ used for standardization were \\
+ 18 to 44 years ({age_wts_rounded[1]}%), \\
+ 45 to 64 years ({age_wts_rounded[2]}%), \\
+ 65 to 74 years ({age_wts_rounded[3]}%), \\
+ and 75 years or older ({age_wts_rounded[4]}%)."
+)
+
+age_wts_rounded <- round(100*nhanes_design$wts_htn, 2)
+
+age_wts_defn_htn <- glue(
+ "Age adjustment was performed using direct standardization with the standard \\
+ being all adults with hypertension across the entire period (2013-2023); \\
+ the age categories used for standardization were \\
+ 18 to 44 years ({age_wts_rounded[1]}%), \\
+ 45 to 64 years ({age_wts_rounded[2]}%), \\
+ 65 to 74 years ({age_wts_rounded[3]}%), \\
+ and 75 years or older ({age_wts_rounded[4]}%)."
+) 
+```
+
+
+Table 1. Demographic characteristics of US adults in 2013-2014, 2015-2016, 2017-2020, and 2021-2023.
+
+```{r}
+flextable_autofit(tbl_characteristics, 
+                  prop_used_col_1 = .3,
+                  width_max = width_max_portrait) %>% 
+ add_footer_lines(values = as_paragraph(
+  "Numbers in the table are estimated percentage (95% confidence interval) of the US adult population."
+ ))
+```
+
+`r portrait_above()`
+
+Table 2. Age-specific and age-adjusted prevalence of hypertension among US adults in 2013-2014, 2015-2016, 2017-2020, and 2021-2023, overall and in age, sex, and race-ethnicity subgroups.
+
+```{r}
+flextable_autofit(tbl_htn_prev$jnc7,
+                  prop_used_col_1 = .3,
+                  width_max = width_max_landscape) %>% 
+ add_footer_lines(values = as_paragraph(
+  "Numbers in the table are estimated percentage (95% confidence interval) of the US adult population or subgroup with hypertension."
+ )) %>% 
+ add_footer_lines(values = as_paragraph(htn_jnc7_defn)) %>% 
+ add_footer_lines(values = as_paragraph(age_wts_defn_overall))
+
+```
+
+\newpage
+
+Table 3. Age-specific and age-adjusted proportion of US adults with hypertension who had controlled blood pressure in 2013-2014, 2015-2016, 2017-2020, and 2021-2023, overall and in subgroups.
+
+```{r}
+flextable_autofit(tbl_bp_control_prev$jnc7,
+                  prop_used_col_1 = .3,
+                  width_max = width_max_landscape)  %>% 
+ add_footer_lines(values = as_paragraph(
+  "Numbers in the table are estimated percentage (95% confidence interval) of the US adult population with hypertension who had controlled blood pressure."
+ )) %>% 
+ add_footer_lines(values = as_paragraph(htn_jnc7_defn)) %>%
+ add_footer_lines(values = as_paragraph(bpc_jnc7_defn)) %>% 
+ add_footer_lines(values = as_paragraph(age_wts_defn_htn))
+```
+
+\newpage
+
+Table 4. Age-specific and age-adjusted proportion of US adults with hypertension and taking antihypertensive medication who had controlled blood pressure in 2013-2014, 2015-2016, 2017-2020, and 2021-2023, overall and in subgroups.
+
+```{r}
+flextable_autofit(tbl_bp_control_meds_prev$jnc7,
+                  prop_used_col_1 = .3,
+                  width_max = width_max_landscape) %>% 
+ add_footer_lines(values = as_paragraph(
+  "Numbers in the table are estimated percentage (95% confidence interval) of the US adult population with hypertension and taking antihypertensive medication who had controlled blood pressure."
+ )) %>% 
+ add_footer_lines(values = as_paragraph(htn_jnc7_defn)) %>%
+ add_footer_lines(values = as_paragraph(bpc_jnc7_defn)) %>% 
+ add_footer_lines(values = as_paragraph(age_wts_defn_overall))
+```
+
+
+`r landscape_above()`
+
+Table 5: Prevalence ratios for blood pressure control by calendar period among adults with hypertension.
+
+```{r}
+tbl_prevalence_ratios_by_cycle$htn %>% 
+ flextable_autofit(prop_used_col_1 = .3, 
+                   width_max = width_max_portrait) %>%
+ add_footer_lines(values = as_paragraph("Multivariable adjustment was applied using all variables listed in the table")) %>% 
+ add_footer_lines(values = as_paragraph(bpc_jnc7_defn))
+ 
+```
+
+\newpage
+
+Table 6: Prevalence ratios for blood pressure control by calendar period among adults with hypertension taking antihypertensive medication.
+
+```{r}
+tbl_prevalence_ratios_by_cycle$htn_med_use %>% 
+ flextable_autofit(prop_used_col_1 = .3, 
+                   width_max = width_max_portrait) %>%
+  add_footer_lines(values = as_paragraph("Multivariable adjustment was applied using all variables listed in the table")) %>% 
+ add_footer_lines(values = as_paragraph(bpc_jnc7_defn))
+ 
+```
+
+`r portrait_above()`
+
+**SUPPLEMENT**
+
+\newpage
+
+Table S1. Mean systolic and diastolic blood pressure and distribution of blood pressure categories among US adults in 2013-2014, 2015-2016, 2017-2020, and 2021-2023.
+
+```{r}
+flextable_autofit(tbl_bp_means,
+                  prop_used_col_1 = .3, 
+                  width_max = width_max_landscape) %>% 
+ add_footer_lines(values = as_paragraph("Numbers in the table are estimated mean or percentage (95% confidence interval) of the US adult population.")) %>% 
+ add_footer_lines(values = as_paragraph("US adults with systolic and diastolic blood pressure in two categories were categorized according to the higher grouping (e.g., a participant with systolic blood pressure of 124 mm Hg and diastolic blood pressure of 84 mm Hg were placed in the 130-139/80-89 mm Hg category)."))
+```
+
+
+\newpage
+
+Table S2: Age-specific and age-adjusted proportion of US adults with hypertension who reported being aware they had hypertension in 2013-2014, 2015-2016, 2017-2020, and 2021-2023, overall and in subgroups.
+```{r}
+flextable_autofit(tbl_htn_aware_prev$jnc7,
+                  prop_used_col_1 = .3,
+                  width_max = width_max_landscape) %>% 
+ add_footer_lines(values = as_paragraph(
+  "Numbers in the table are estimated percentage (95% confidence interval) of the US adult population with hypertension who reported being aware they had hypertension."
+ )) %>% 
+ add_footer_lines(values = as_paragraph(htn_jnc7_defn)) %>%
+ add_footer_lines(values = as_paragraph(age_wts_defn_htn))
+
+```
+
+\newpage
+
+Table S3: Age-specific and age-adjusted proportion of US adults with and aware of having hypertension who were taking antihypertensive medication in 2013-2014, 2015-2016, 2017-2020, and 2021-2023, overall and in subgroups.
+```{r}
+flextable_autofit(tbl_htn_aware_meds_prev$jnc7,
+                  prop_used_col_1 = .3,
+                  width_max = width_max_landscape) %>% 
+ add_footer_lines(values = as_paragraph(
+  "Numbers in the table are proportion (95% confidence interval) of the population with and aware of having hypertension that reported taking antihypertensive medication"
+ )) %>%
+ add_footer_lines(values = as_paragraph(htn_jnc7_defn)) %>%
+ add_footer_lines(values = as_paragraph(age_wts_defn_htn))
+
+```
+
+
+`r landscape_above()`
+
+Table S4: Prevalence ratios for hypertension awareness and antihypertensive medication use
+
+```{r}
+
+tbl_prevalence_ratios$awareness_meds %>% 
+ flextable_autofit(prop_used_col_1 = .3, 
+                   width_max = width_max_portrait)
+
+```
+
+`r portrait_above()`
+
+Table S5. Age-adjusted prevalence of hypertension among US adults in 2013-2014, 2015-2016, 2017-2020, and 2021-2023, overall and in age, sex, and race-ethnicity subgroups without calibrating the oscillometric blood pressure measurements.
+
+```{r}
+
+flextable_autofit(tbl_htn_prev$jnc7_uncalib,
+                  prop_used_col_1 = .3,
+                  width_max = width_max_landscape) %>% 
+ add_footer_lines(values = as_paragraph(
+  "Numbers in the table are estimated percentage (95% confidence interval) of the US adult population or subgroup with hypertension."
+ )) %>% 
+ add_footer_lines(values = as_paragraph(htn_jnc7_defn)) %>% 
+ add_footer_lines(values = as_paragraph(age_wts_defn_overall))
+
+```
+
+\newpage
+
+Table S6. Age-specific and age-adjusted proportion of US adults with hypertension who had controlled blood pressure according to the JNC7 guideline in 2013-2014, 2015-2016, 2017-2020, and 2021-2023, overall and in subgroups, without calibrating the oscillometric blood pressure measurements.
+
+```{r}
+flextable_autofit(tbl_bp_control_prev$jnc7_uncalib,
+                  prop_used_col_1 = .3,
+                  width_max = width_max_landscape)  %>% 
+ add_footer_lines(values = as_paragraph(
+  "Numbers in the table are estimated percentage (95% confidence interval) of the US adult population with hypertension who had controlled blood pressure."
+ )) %>% 
+ add_footer_lines(values = as_paragraph(htn_jnc7_defn)) %>%
+ add_footer_lines(values = as_paragraph(bpc_jnc7_defn))  %>% 
+ add_footer_lines(values = as_paragraph(age_wts_defn_htn))
+```
+
+
+\newpage
+
+Table S7. Age-specific and age-adjusted proportion of US adults with hypertension and taking antihypertensive medication who had controlled blood pressure according to the JNC7 guideline in 2013-2014, 2015-2016, 2017-2020, and 2021-2023, overall and in subgroups, without calibrating the oscillometric blood pressure measurements.
+```{r}
+flextable_autofit(tbl_bp_control_meds_prev$jnc7_uncalib,
+                  prop_used_col_1 = .3,
+                  width_max = width_max_landscape) %>% 
+ add_footer_lines(values = as_paragraph(
+  "Numbers in the table are estimated percentage (95% confidence interval) of the US adult population with hypertension and taking antihypertensive medication who had controlled blood pressure."
+ )) %>% 
+ add_footer_lines(values = as_paragraph(htn_jnc7_defn)) %>%
+ add_footer_lines(values = as_paragraph(bpc_jnc7_defn))  %>% 
+ add_footer_lines(values = as_paragraph(age_wts_defn_htn))
+```
+
+\newpage
+
+Table S8: Age-specific and age-adjusted prevalence of hypertension defined by the 2017 ACC/AHA Blood Pressure Guideline among US adults in 2013-2014, 2015-2016, 2017-2020, and 2021-2023, overall and in subgroups.
+
+```{r}
+tbl_htn_prev$accaha %>% 
+ flextable_autofit(prop_used_col_1 = .3,
+                   width_max = width_max_landscape)  %>% 
+ add_footer_lines(values = as_paragraph(
+  "Numbers in the table are estimated percentage (95% confidence interval) of the US adult population or subgroup with hypertension."
+ )) %>% 
+ add_footer_lines(values = as_paragraph(htn_accaha_defn)) %>% 
+ add_footer_lines(values = as_paragraph(age_wts_defn_overall))
+```
+
+\newpage
+
+Table S9: Age-specific and age-adjusted proportion of US adults with hypertension according to the 2017 ACC/AHA BP guideline who were aware they had hypertension in 2013-2014, 2015-2016, 2017-2020, and 2021-2023, overall and in subgroups.
+
+```{r}
+tbl_htn_aware_prev$accaha %>% 
+ flextable_autofit(prop_used_col_1 = .3,
+                   width_max = width_max_landscape) %>% 
+ add_footer_lines(values = as_paragraph(
+  "Numbers in the table are estimated percentage (95% confidence interval) of the US adult population with hypertension who were aware they had hypertension."
+ )) %>% 
+ add_footer_lines(values = as_paragraph(htn_accaha_defn)) %>%
+ add_footer_lines(values = as_paragraph(bpc_accaha_defn))  %>% 
+ add_footer_lines(values = as_paragraph(age_wts_defn_htn))
+```
+
+\newpage
+
+Table S10: Age-specific and age-adjusted proportion of US adults aware they had hypertension according to the 2017 ACC/AHA BP guideline who were taking antihypertensive medication in 2013-2014, 2015-2016, 2017-2020, and 2021-2023, overall and in subgroups.
+
+```{r}
+tbl_htn_aware_meds_prev$accaha %>% 
+ flextable_autofit(prop_used_col_1 = .3,
+                   width_max = width_max_landscape) %>% 
+ add_footer_lines(values = as_paragraph(
+  "Numbers in the table are estimated percentage (95% confidence interval) of the US adult population with hypertension and aware of having hypertension who reported using antihypertensive medication."
+ )) %>% 
+ add_footer_lines(values = as_paragraph(htn_accaha_defn)) %>%
+ add_footer_lines(values = as_paragraph(bpc_accaha_defn)) %>% 
+ add_footer_lines(values = as_paragraph(age_wts_defn_htn))
+```
+
+\newpage
+
+Table S11. Age-specific and age-adjusted proportion of US adults with hypertension who had controlled blood pressure according to the 2017 ACC/AHA Blood Pressure Guideline in 2009-2012, 2013-2016 and 2017-2020, overall and in subgroups.
+
+```{r}
+flextable_autofit(tbl_bp_control_prev$accaha,
+                  prop_used_col_1 = .3,
+                  width_max = width_max_landscape) %>% 
+ add_footer_lines(values = as_paragraph(
+  "Numbers in the table are estimated percentage (95% confidence interval) of the US adult population with hypertension who had controlled blood pressure."
+ )) %>% 
+ add_footer_lines(values = as_paragraph(htn_accaha_defn)) %>%
+ add_footer_lines(values = as_paragraph(bpc_accaha_defn)) %>% 
+ add_footer_lines(values = as_paragraph(age_wts_defn_htn))
+```
+
+\newpage
+
+Table S12. Age-specific and age-adjusted proportion of US adults with hypertension  and taking antihypertensive medication who had controlled blood pressure according to the 2017 ACC/AHA BP guideline in 2013-2014, 2015-2016, 2017-2020, and 2021-2023, overall and in subgroups.
+
+```{r}
+
+tbl_bp_control_meds_prev$accaha %>% 
+ flextable_autofit(prop_used_col_1 = .3,
+                   width_max = width_max_landscape) %>% 
+ add_footer_lines(values = as_paragraph(
+  "Numbers in the table are estimated percentage (95% confidence interval) of the US adult population with hypertension and taking antihypertensive medication who had controlled blood pressure."
+ )) %>% 
+ add_footer_lines(values = as_paragraph(htn_accaha_defn)) %>%
+ add_footer_lines(values = as_paragraph(bpc_accaha_defn)) %>% 
+ add_footer_lines(values = as_paragraph(age_wts_defn_htn))
+
+```
+
+`r landscape_above()`
+
+Table S13. Percent of increase in blood pressure control from 2017-2020 to 2021-2023 among non-Hispanic Black adults that can be attributed to education, income-to-poverty ratio, routine place for health care and type of health insurance.
+
+```{r}
+tbl_prevalance_ratio_diffs %>% 
+ flextable_autofit(prop_used_col_1 = .3)
+```
+
+
+\newpage
+
+Exclusion Table: Participants included in the current analysis. (Left this un-numbered to keep the same supplemental table numbers as the analysis plan)
+
+```{r}
+
+read_csv(here::here('doc/exclusions.csv')) %>% 
+ rename(Overall = overall) %>% 
+ rename_with(.fn = ~str_replace(.x, "_", "-")) %>% 
+ flextable() %>% 
+ flextable_polish() %>% 
+ set_header_labels(label = "Exclusion") %>% 
+ add_header_row(values = c("Exclusion",
+                           "Overall",
+                           "Calendar period"),
+                colwidths = c(1, 1, 4)) %>% 
+ merge_v(part = 'header') %>% 
+ flextable_autofit(prop_used_col_1 = .3)
+
+```
+
+
+`r portrait_above()`
+
+
+
